@@ -5,7 +5,7 @@ const { sourceMapsEnabled } = require("process");
 const { log } = require("console");
 const httpServer = createServer();
 const io = new Server(httpServer, {
-  cors: "https://yuzen9622.github.io",
+  cors: "*",
 });
 const allUser = {};
 
@@ -68,6 +68,6 @@ io.on("connection", (socket) => {
     currentUser.online = false;
   });
 });
-let port = 8080;
+let port = process.env.PORT || 5000;
 console.log("socket server online at ", port);
 httpServer.listen(port);
