@@ -1,11 +1,11 @@
 const { Server } = require("socket.io");
-const { createServer } = require("https");
+const { createServer } = require("http");
 const { on } = require("events");
 const { sourceMapsEnabled } = require("process");
 const { log } = require("console");
 const httpServer = createServer();
 const io = new Server(httpServer, {
-  cors: "https://yuzen9622.github.io/",
+  cors: "https://yuzen9622.github.io",
 });
 const allUser = {};
 
