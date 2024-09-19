@@ -49,11 +49,13 @@ io.on("connection", (socket) => {
       });
       currentUser.socket.on("finish", (data) => {
         recipientPlayer.playing = false;
+        recipientPlayer.online = false;
         recipientPlayer.socket.emit("finishState", data);
       });
 
       recipientPlayer.socket.on("finish", (data) => {
         currentUser.playing = false;
+        currentUser.online = false;
         currentUser.socket.emit("finishState", data);
       });
     } else {
