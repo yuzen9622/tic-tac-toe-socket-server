@@ -5,7 +5,7 @@ const { sourceMapsEnabled } = require("process");
 const { log } = require("console");
 const httpServer = createServer();
 const io = new Server(httpServer, {
-  cors: "http:/localhost:3000",
+  cors: "https://yuzen9622.github.io/",
 });
 const allUser = {};
 
