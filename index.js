@@ -4,7 +4,7 @@ const { on } = require("events");
 const { sourceMapsEnabled } = require("process");
 const { log } = require("console");
 const httpServer = createServer();
-const io = new Server(httpServer, {
+const io = new Server({
   cors: "*",
 });
 const allUser = {};
@@ -70,4 +70,4 @@ io.on("connection", (socket) => {
 });
 let port = process.env.PORT || 5000;
 console.log("socket server online at ", port);
-httpServer.listen(port);
+io.listen(port);
