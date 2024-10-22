@@ -16,12 +16,19 @@ io.on("connection", (socket) => {
   };
 
   socket.on("join", (data) => {
+    allPlayer.forEach((player, index) => {
+      if (player.playerName.id === data.playerName.id) {
+        allPlayer.splice(index, 1);
+      }
+    });
+
     allPlayer.push({
       socketId: socket.id,
       playerName: data.playerName,
       playing: false,
       online: true,
     });
+
     const currentUser = allUser[socket.id];
     currentUser.playerName = data.playerName;
 
@@ -29,7 +36,6 @@ io.on("connection", (socket) => {
 
     let recipientPlayer;
     socket.on("findPlayer", (socketId) => {
-      console.log(socketId);
       recipientPlayer = allUser[socketId];
       if (recipientPlayer) {
         allPlayer.map((item) => {
