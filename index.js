@@ -104,9 +104,9 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     const currentUser = allUser[socket.id];
     currentUser.online = false;
-    allPlayer.filter((item) => {
+    allPlayer.forEach((item, key) => {
       if (item.socketId === socket.id) {
-        item.online = false;
+        allPlayer.splice(key, 1);
       }
     });
     io.emit("allUser", allPlayer);
