@@ -44,7 +44,7 @@ io.on("connection", (socket) => {
     socket.on("findPlayer", (userId) => {
       recipientPlayer = allUser.find((item) => item.playerName.id === userId);
       if (recipientPlayer) {
-        allPlayer.forEach((item) => {
+        allPlayer.map((item) => {
           if (
             item.playerName.id === recipientPlayer.playerName.id ||
             item.playerName.id === currentUser.playerName.id
@@ -73,8 +73,11 @@ io.on("connection", (socket) => {
         currentUser.socket.on("finish", (data) => {
           recipientPlayer.playing = false;
           recipientPlayer.online = false;
-          allPlayer.forEach((item) => {
-            if (item.socketId === recipientPlayer.socket.id) {
+          allPlayer.map((item) => {
+            if (
+              item.socketId === recipientPlayer.socket.id ||
+              item.socketId === currentUser.socket.id
+            ) {
               item.playing = false;
             } else if (item.socketId === currentUser.socket.id) {
               item.playing = false;
@@ -91,7 +94,10 @@ io.on("connection", (socket) => {
           currentUser.playing = false;
           currentUser.online = false;
           allPlayer.map((item) => {
-            if (item.socketId === recipientPlayer.socket.id) {
+            if (
+              item.socketId === recipientPlayer.socket.id ||
+              item.socketId === currentUser.socket.id
+            ) {
               item.playing = false;
             } else if (item.socketId === currentUser.socket.id) {
               item.playing = false;
