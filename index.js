@@ -40,14 +40,14 @@ io.on("connection", (socket) => {
     currentUser.playerName = data.playerName;
     console.log(allPlayer);
 
-    let recipientPlayer;
-    socket.on("findPlayer", (socketId) => {
-      recipientPlayer = allUser.find((item) => item.socketId === socketId);
+    let recipientPlayer = null;
+    socket.on("findPlayer", (userId) => {
+      recipientPlayer = allUser.find((item) => item.playerName.id === userId);
       if (recipientPlayer) {
-        allPlayer.map((item) => {
+        allPlayer.forEach((item) => {
           if (
-            item.socketId === recipientPlayer.socket.id ||
-            item.socketId === currentUser.socket.id
+            item.playerName.id === recipientPlayer.playerName.id ||
+            item.playerName.id === currentUser.playerName.id
           ) {
             item.playing = true;
           }
@@ -73,7 +73,7 @@ io.on("connection", (socket) => {
         currentUser.socket.on("finish", (data) => {
           recipientPlayer.playing = false;
           recipientPlayer.online = false;
-          allPlayer.map((item) => {
+          allPlayer.forEach((item) => {
             if (item.socketId === recipientPlayer.socket.id) {
               item.playing = false;
             } else if (item.socketId === currentUser.socket.id) {
