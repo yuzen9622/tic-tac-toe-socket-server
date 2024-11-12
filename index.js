@@ -7,44 +7,48 @@ const httpServer = createServer();
 const io = new Server({
   cors: "*",
 });
-const allUser = {};
+const allUser = [];
 let allPlayer = [];
 io.on("connection", (socket) => {
-  allUser[socket.id] = {
-    socket: socket,
-    online: true,
-  };
-
   socket.on("join", (data) => {
     allPlayer.forEach((player, index) => {
       if (player.playerName.id === data.playerName.id) {
         allPlayer.splice(index, 1);
       }
     });
-
+    allUser.forEach((player, index) => {
+      if (player.playerName.id === data.playerName.id) {
+        allUser.splice(index, 1);
+      }
+    });
+    allUser.push({
+      socketId: socket.id,
+      playerName: data.playerName,
+      playing: false,
+      online: true,
+      socket: socket,
+    });
     allPlayer.push({
       socketId: socket.id,
       playerName: data.playerName,
       playing: false,
       online: true,
     });
-
-    const currentUser = allUser[socket.id];
-    currentUser.playerName = data.playerName;
     console.log(allPlayer);
     io.emit("allUser", allPlayer);
+    const currentUser = allUser.find((item) => item?.socketId === socket.id);
+    currentUser.playerName = data.playerName;
+    console.log(allPlayer);
 
     let recipientPlayer;
     socket.on("findPlayer", (socketId) => {
-      recipientPlayer = allUser[socketId];
+      recipientPlayer = allUser.find((item) => item.socketId === socketId);
       if (recipientPlayer) {
         allPlayer.map((item) => {
           if (
             item.socketId === recipientPlayer.socket.id ||
             item.socketId === currentUser.socket.id
           ) {
-            item.playing = true;
-          } else if (item.socketId === currentUser.socket.id) {
             item.playing = true;
           }
         });
@@ -105,8 +109,12 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    const currentUser = allUser[socket.id];
-    currentUser.online = false;
+    allUser.forEach((item, key) => {
+      if (item.socketId === socket.id) {
+        item.online = false;
+        allUser.splice(key, 1);
+      }
+    });
     allPlayer.forEach((item, key) => {
       if (item.socketId === socket.id) {
         item.online = false;
