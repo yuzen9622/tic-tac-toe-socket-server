@@ -31,7 +31,7 @@ io.on("connection", (socket) => {
 
     const currentUser = allUser[socket.id];
     currentUser.playerName = data.playerName;
-
+    console.log(allPlayer);
     io.emit("allUser", allPlayer);
 
     let recipientPlayer;
@@ -39,7 +39,10 @@ io.on("connection", (socket) => {
       recipientPlayer = allUser[socketId];
       if (recipientPlayer) {
         allPlayer.map((item) => {
-          if (item.socketId === recipientPlayer.socket.id) {
+          if (
+            item.socketId === recipientPlayer.socket.id ||
+            item.socketId === currentUser.socket.id
+          ) {
             item.playing = true;
           } else if (item.socketId === currentUser.socket.id) {
             item.playing = true;
@@ -106,12 +109,121 @@ io.on("connection", (socket) => {
     currentUser.online = false;
     allPlayer.forEach((item, key) => {
       if (item.socketId === socket.id) {
+        item.online = false;
         allPlayer.splice(key, 1);
       }
     });
+    console.log(allUser);
     io.emit("allUser", allPlayer);
   });
 });
 let port = process.env.PORT || 5000;
 console.log("socket server online at ", port);
 io.listen(port);
+
+// const { Server } = require("socket.io");
+// const { createServer } = require("http");
+// const httpServer = createServer();
+// const io = new Server(httpServer, {
+//   cors: "*",
+// });
+
+// const allUser = {};
+// let allPlayer = [];
+
+// io.on("connection", (socket) => {
+//   allUser[socket.id] = {
+//     socket: socket,
+//     online: true,
+//   };
+
+//   socket.on("join", (data) => {
+//     // 避免同一玩家重複加入
+//     allPlayer = allPlayer.filter(
+//       (player) => player.playerName.id !== data.playerName.id
+//     );
+
+//     // 新增玩家
+//     allPlayer.push({
+//       socketId: socket.id,
+//       playerName: data.playerName,
+//       playing: false,
+//       online: true,
+//     });
+
+//     const currentUser = allUser[socket.id];
+//     currentUser.playerName = data.playerName;
+//     console.log(allPlayer);
+//     io.emit("allUser", allPlayer);
+
+//     socket.on("findPlayer", (socketId) => {
+//       const recipientPlayer = allUser[socketId];
+//       if (!recipientPlayer) {
+//         return currentUser.socket.emit("recipientPlayerNotFound");
+//       }
+
+//       // 設置雙方為正在遊戲狀態
+//       [currentUser, recipientPlayer].forEach((player) => {
+//         player.online = true;
+//         player.playing = true;
+//         allPlayer = allPlayer.map((item) =>
+//           item.socketId === player.socket.id ? { ...item, playing: true } : item
+//         );
+//       });
+
+//       io.emit("allUser", allPlayer);
+
+//       // 通知雙方開始遊戲
+//       currentUser.socket.emit("recipientPlayerFound", {
+//         recipientName: recipientPlayer.playerName,
+//         playingAs: "X",
+//       });
+//       recipientPlayer.socket.emit("recipientPlayerFound", {
+//         recipientName: currentUser.playerName,
+//         playingAs: "O",
+//       });
+
+//       // 單次註冊事件
+//       const playerMoveHandler = (data) =>
+//         recipientPlayer.socket.emit("movePlayerFromServer", data);
+//       const recipientMoveHandler = (data) =>
+//         currentUser.socket.emit("movePlayerFromServer", data);
+
+//       currentUser.socket.on("playerMove", playerMoveHandler);
+//       recipientPlayer.socket.on("playerMove", recipientMoveHandler);
+
+//       const finishHandler = (data) => {
+//         [currentUser, recipientPlayer].forEach((player) => {
+//           player.playing = false;
+//           player.online = false;
+//           allPlayer = allPlayer.map((item) =>
+//             item.socketId === player.socket.id
+//               ? { ...item, playing: false }
+//               : item
+//           );
+//         });
+//         setTimeout(() => {
+//           io.emit("allUser", allPlayer);
+//         }, 3000);
+
+//         recipientPlayer.socket.emit("finishState", data);
+//       };
+
+//       currentUser.socket.on("finish", finishHandler);
+//       recipientPlayer.socket.on("finish", finishHandler);
+//     });
+//   });
+
+//   socket.on("disconnect", () => {
+//     const currentUser = allUser[socket.id];
+//     if (currentUser) {
+//       currentUser.online = false;
+//       allPlayer = allPlayer.filter((item) => item.socketId !== socket.id);
+//       console.log(allUser);
+//       io.emit("allUser", allPlayer);
+//     }
+//   });
+// });
+
+// let port = process.env.PORT || 5000;
+// httpServer.listen(port, () => console.log("Socket server online at", port));
