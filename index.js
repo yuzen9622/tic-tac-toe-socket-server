@@ -118,8 +118,8 @@ let port = process.env.PORT || 5000;
 console.log("socket server online at ", port);
 io.listen(port);
 /*web server*/
-dotenv.config();
 
+dotenv.config();
 const server = http.createServer(async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.url === "/play" && req.method === "POST") {
