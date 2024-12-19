@@ -4,6 +4,7 @@ const io = new Server({
 });
 const allUser = {};
 let allPlayer = [];
+let games = [];
 io.on("connection", (socket) => {
   allUser[socket.id] = {
     socket: socket,
@@ -24,7 +25,6 @@ io.on("connection", (socket) => {
       online: true,
     });
 
-    console.log(allPlayer);
     io.emit("allUser", allPlayer);
   });
 
@@ -32,7 +32,6 @@ io.on("connection", (socket) => {
     const user = allPlayer.find(
       (user) => user.playerName.id === data.recipientPlayer.id
     );
-    console.log(user);
 
     if (user) {
       io.to(user.socketId).emit("movePlayerFromServer", data);
@@ -47,6 +46,14 @@ io.on("connection", (socket) => {
       (user) => user.playerName.id === data.userId
     );
     if (recipientPlayer) {
+      games = games.filter((game) => {
+        if (
+          game.members.find((member) => member === recipientPlayer.socketId)
+        ) {
+          return false;
+        }
+        return true;
+      });
       allPlayer.map((item) => {
         if (item.socketId === recipientPlayer.socketId) {
           item.playing = false;
@@ -77,7 +84,10 @@ io.on("connection", (socket) => {
           item.playing = true;
         }
       });
-
+      let game = {
+        members: [currentUser.socketId, recipientPlayer.socketId],
+      };
+      games.push(game);
       io.emit("allUser", allPlayer);
       io.to(recipientPlayer.socketId).emit("recipientPlayerFound", {
         recipientName: currentUser.playerName,
@@ -99,6 +109,28 @@ io.on("connection", (socket) => {
         allPlayer.splice(key, 1);
       }
     });
+    let disconnectedGame = games.find((game) =>
+      game.members.find((member) => member === socket.id)
+    );
+    console.log(disconnectedGame);
+    games = games.filter((game) => {
+      if (game.members.find((member) => member === socket.id)) {
+        return false;
+      }
+      return true;
+    });
+    if (disconnectedGame) {
+      let disconnectUserSocketId = disconnectedGame.members.find(
+        (member) => member !== socket.id
+      );
+
+      allPlayer.forEach((item, key) => {
+        if (item.socketId === disconnectUserSocketId) {
+          item.playing = false;
+        }
+      });
+      io.to(disconnectUserSocketId).emit("oppentDisconnect", "disconnect");
+    }
     //console.log(allUser);
     io.emit("allUser", allPlayer);
   });
