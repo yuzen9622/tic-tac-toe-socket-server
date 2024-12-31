@@ -1,4 +1,12 @@
 const { Server } = require("socket.io");
+
+/** 創建socket.io server
+ * 設定跨來源資源共用
+ * 創建allPlayer陣列，用於存放所有玩家資訊
+ * 創建games陣列，用於存放所有遊戲資訊
+ * 當socket連接時，將socket.id加入allUser中
+ * @param {Object} socket
+ */
 const io = new Server({
   cors: "*",
 });
@@ -11,6 +19,12 @@ io.on("connection", (socket) => {
     online: true,
   };
 
+  /**
+   * 當socket接收到join事件時
+   * 將玩家資訊加入allPlayer陣列
+   * 發送allUser事件給所有玩家
+   * @param {Object} data
+   */
   socket.on("join", (data) => {
     allPlayer.forEach((player, index) => {
       if (player.playerName.id === data.playerName.id) {
@@ -24,10 +38,16 @@ io.on("connection", (socket) => {
       playing: false,
       online: true,
     });
-
+    console.log(allPlayer);
     io.emit("allUser", allPlayer);
   });
 
+  /**
+   * 當socket接收到playerMove事件時
+   * 尋找recipientPlayer
+   * 發送movePlayerFromServer事件給recipientPlayer
+   * @param {Object} data
+   */
   socket.on("playerMove", (data) => {
     const user = allPlayer.find(
       (user) => user.playerName.id === data.recipientPlayer.id
@@ -37,6 +57,13 @@ io.on("connection", (socket) => {
       io.to(user.socketId).emit("movePlayerFromServer", data);
     }
   });
+
+  /**
+   * 當socket接收到finish事件時
+   * 尋找recipientPlayer
+   * 發送finishState事件給recipientPlayer
+   * @param {Object} data
+   */
 
   socket.on("finish", (data) => {
     const recipientPlayer = allPlayer.find(
@@ -67,6 +94,13 @@ io.on("connection", (socket) => {
       }, 3000);
     }
   });
+  /**
+   * 當socket接收到findPlayer事件時
+   * 尋找recipientPlayer
+   * 發送recipientPlayerFound事件給recipientPlayer
+   * 發送recipientPlayerFound事件給currentUser
+   * @param {Object} data
+   */
   socket.on("findPlayer", (data) => {
     let recipientPlayer = allPlayer.find(
       (user) => user.socketId === data.socketId
@@ -99,6 +133,16 @@ io.on("connection", (socket) => {
       });
     }
   });
+
+  /**
+   * 當socket接收到disconnect事件時
+   * 尋找currentUser
+   * 將currentUser.online設為false
+   * 將currentUser.playing設為false
+   * 將currentUser從allPlayer中刪除
+   * 將有在遊戲中的遊戲刪除
+   * 發送oppentDisconnect事件給對手
+   */
 
   socket.on("disconnect", () => {
     const currentUser = allUser[socket.id];
@@ -135,6 +179,10 @@ io.on("connection", (socket) => {
     io.emit("allUser", allPlayer);
   });
 });
+
+/**
+ * 監聽port
+ */
 let port = process.env.PORT || 5000;
 console.log("socket server online at ", port);
 io.listen(port);
